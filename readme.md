@@ -14,6 +14,11 @@
 {
     "message":"connected"
 }
+// return -> 
+{
+    "message": "error",
+    "details": "already connected"
+}
 ```
 
 - [x] Change Chunk

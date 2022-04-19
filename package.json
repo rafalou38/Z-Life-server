@@ -11,11 +11,14 @@
   },
   "scripts": {
     "watch": "tsc --watch",
-    "start": "node ./build/server.js"
+    "start": "node ./build/server.js",
+    "test": "jest"
   },
   "devDependencies": {
+    "@types/jest": "^27.4.1",
     "@types/ws": "^8.5.3",
-    "typescript": "^4.6.3",
-    "ts-node": "^10.7.0"
+    "jest": "^27.5.1",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3"
   }
 }
