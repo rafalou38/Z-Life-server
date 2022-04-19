@@ -9,21 +9,37 @@ export class Connection {
   currentChunk: Chunk | null = null;
   ws: WebSocket;
   player: Player | null = null;
+  static connections: Connection[] = [];
   constructor(ws: WebSocket) {
     this.ws = ws;
-
     this.ws.on("message", (data) => this.handleMessage(data.toString()));
+    Connection.connections.push(this);
   }
 
   handleMessage(message: string) {
     const data: InData = JSON.parse(message);
     if (data.type === "init") {
-      this.initialized = true;
-      this.player = new Player(this, data.userID);
+      if (Player.isConnected(data.userID)) {
+        log("😡", "Player already connected:", data.userID);
 
-      log("🌍 ", "Client connected:", this.player.id);
+        this.ws.send(
+          JSON.stringify({
+            message: "error",
+            details: "already connected",
+          })
+        );
+        this.ws.close();
+        const index = Connection.connections.indexOf(this);
+        if (index > -1) Connection.connections.splice(index, 1);
+        return;
+      } else {
+        this.initialized = true;
+        this.player = new Player(this, data.userID);
 
-      this.ws.send(JSON.stringify({ message: "connected" }));
+        log("🌍 ", "Client connected:", this.player.id);
+
+        this.ws.send(JSON.stringify({ message: "connected" }));
+      }
     } else if (data.type === "event") {
       log("📬 ", "Event received", data.details.type);
 

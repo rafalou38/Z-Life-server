@@ -9,7 +9,12 @@ const wss = [
   new WS.WebSocket(ws_url),
 ];
 
-const ids = ["1", "2", "3", "3"];
+const ids = [
+  Math.random().toString(36).substring(7),
+  Math.random().toString(36).substring(7),
+  Math.random().toString(36).substring(7),
+];
+ids.push(ids[0]);
 
 test("Connection opened", async () => {
   await Promise.all(
@@ -46,7 +51,7 @@ test("Connection Initialises", async () => {
 });
 test("Does not allow the same user to connect multiple times", async () => {
   const ws = wss.at(-1);
-  ws.send(JSON.stringify({ type: "init", id: ids.at(-1) }));
+  ws.send(JSON.stringify({ type: "init", userID: ids.at(-1) }));
 
   const connected = new Promise((resolve, reject) => {
     ws.once("message", (data) => {
@@ -58,6 +63,11 @@ test("Does not allow the same user to connect multiple times", async () => {
   });
 
   await expect(connected).resolves.toBeTruthy();
+  const closed = new Promise((resolve, reject) => {
+    ws.once("close", () => resolve(true));
+  });
+
+  await expect(closed).resolves.toBeTruthy();
 });
 
 afterAll(() => {
