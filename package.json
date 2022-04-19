@@ -1,0 +1,21 @@
+{
+  "name": "z-life-server",
+  "version": "1.0.0",
+  "description": "Web-sockets server for z-life",
+  "main": "index.js",
+  "author": "RafaelMC",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "4.1.2",
+    "ws": "^8.5.0"
+  },
+  "scripts": {
+    "watch": "tsc --watch",
+    "start": "node ./build/server.js"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.3",
+    "typescript": "^4.6.3",
+    "ts-node": "^10.7.0"
+  }
+}
