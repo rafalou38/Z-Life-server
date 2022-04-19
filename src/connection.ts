@@ -1,7 +1,7 @@
 import { RawData, WebSocket } from "ws";
 import { Chunk } from "./chunk";
 import { Player } from "./player";
-import { GameEvent, Position } from "./types";
+import { InData, Position } from "./types";
 import { log } from "./utils/log";
 
 export class Connection {
@@ -16,7 +16,7 @@ export class Connection {
   }
 
   handleMessage(message: string) {
-    const data: GameEvent = JSON.parse(message);
+    const data: InData = JSON.parse(message);
     if (data.type === "init") {
       this.initialized = true;
       this.player = new Player(this, data.userID);
@@ -47,6 +47,17 @@ export class Connection {
     if (!this.player || !this.initialized) return this.fail();
 
     this.player.move(new_pos.x, new_pos.y);
+
+    this.currentChunk?.dispatch({
+      type: "event",
+      details: {
+        type: "move",
+        player: {
+          id: this.player.id,
+          position: new_pos,
+        },
+      },
+    });
   }
 
   fail() {

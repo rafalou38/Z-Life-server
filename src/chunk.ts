@@ -1,5 +1,6 @@
 import { Connection } from "./connection";
 import { Player } from "./player";
+import { OutData } from "./types";
 
 export class Chunk {
   static chunks: Map<string, Chunk> = new Map();
@@ -16,5 +17,11 @@ export class Chunk {
   }
   addPlayer(player: Player) {
     this.players.push(player);
+  }
+
+  dispatch(data: OutData) {
+    this.players.forEach((player) =>
+      player.connection.ws.send(JSON.stringify(data))
+    );
   }
 }
