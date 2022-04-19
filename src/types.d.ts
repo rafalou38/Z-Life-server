@@ -8,5 +8,11 @@ export type GameEvent =
       details: {
         type: "chunk";
         code: string;
+        position: Position;
       };
     };
+
+export type Position = {
+  x: number;
+  y: number;
+};

@@ -1,13 +1,14 @@
 import { RawData, WebSocket } from "ws";
 import { Chunk } from "./chunk";
-import { GameEvent } from "./types";
+import { Player } from "./player";
+import { GameEvent, Position } from "./types";
 import { log } from "./utils/log";
 
 export class Connection {
   initialized = false;
   currentChunk: Chunk | null = null;
   ws: WebSocket;
-  userID: string | null = null;
+  player: Player | null = null;
   constructor(ws: WebSocket) {
     this.ws = ws;
 
@@ -18,22 +19,37 @@ export class Connection {
     const data: GameEvent = JSON.parse(message);
     if (data.type === "init") {
       this.initialized = true;
-      this.userID = data.userID;
-      log("🌍 ", "Client connected:", this.userID);
+      this.player = new Player(this, data.userID);
+
+      log("🌍 ", "Client connected:", this.player.id);
+
       this.ws.send(JSON.stringify({ message: "connected" }));
     } else if (data.type === "event") {
       log("📬 ", "Event received", data.details.type);
 
       if (data.details.type === "chunk") {
         this.moveToChunk(data.details.code);
+        this.move(data.details.position);
       }
     }
   }
 
   moveToChunk(chunk_code: string) {
-    this.currentChunk?.removePlayer(this);
+    if (!this.player || !this.initialized) return this.fail();
+
+    this.currentChunk?.removePlayer(this.player);
 
     this.currentChunk = Chunk.get(chunk_code);
-    this.currentChunk.addPlayer(this);
+    this.currentChunk.addPlayer(this.player);
+  }
+
+  move(new_pos: Position) {
+    if (!this.player || !this.initialized) return this.fail();
+
+    this.player.move(new_pos.x, new_pos.y);
+  }
+
+  fail() {
+    this.ws.send(JSON.stringify({ message: "fail" }));
   }
 }

@@ -3,7 +3,7 @@
 # unity send:
 
 
-## Connect
+- [x] Connect
 
 ```json
 {
@@ -16,7 +16,7 @@
 }
 ```
 
-## Change Chunk
+- [x] Change Chunk
 
 ```json
 
@@ -66,6 +66,19 @@
                 "x": 0,
                 "y": 0
             }
+        },
+    }
+}
+```
+
+## Player left chunk
+```json
+{
+    "type": "event",
+    "details": {
+        "type": "player left",
+        "user": {
+            "id": "",
         },
     }
 }
