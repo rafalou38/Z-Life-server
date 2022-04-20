@@ -30,13 +30,20 @@ export type OutData =
     }
   | {
       type: "event";
-      details: {
-        type: "move";
-        player: {
-          id: string;
-          position: Position;
-        };
-      };
+      details:
+        | {
+            type: "move";
+            player: {
+              id: string;
+              position: Position;
+            };
+          }
+        | {
+            type: "player left";
+            player: {
+              id: string;
+            };
+          };
     }
   | {
       type: "fetch";

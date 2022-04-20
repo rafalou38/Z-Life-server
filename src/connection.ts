@@ -51,16 +51,11 @@ export class Connection {
     } else if (data.type === "fetch") {
       log("📬 ", "Fetch request received");
       if (!this.player) return this.fail("not connected");
-      console.log({
-        type: "fetch",
-        chunk: this.player.chunk.code,
-        position: this.player.position,
-      });
 
       this.ws.send(
         JSON.stringify({
           type: "fetch",
-          chunk: this.player.chunk.code,
+          chunk: this.player.chunk?.code,
           position: this.player.position,
         } as OutData)
       );
@@ -69,6 +64,15 @@ export class Connection {
 
   moveToChunk(chunk_code: string) {
     if (!this.player || !this.initialized) return this.fail("not connected");
+    this.player.chunk?.dispatch({
+      type: "event",
+      details: {
+        type: "player left",
+        player: {
+          id: this.player.id,
+        },
+      },
+    });
     this.player.changeChunk(chunk_code);
   }
 
@@ -77,7 +81,7 @@ export class Connection {
 
     this.player.move(new_pos.x, new_pos.y);
 
-    this.player.chunk.dispatch(
+    this.player.chunk?.dispatch(
       {
         type: "event",
         details: {

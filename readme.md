@@ -56,7 +56,7 @@
 }
 ```
 
-## Move
+- [x] Move
 
 ```json
 
@@ -99,7 +99,7 @@
     "type": "event",
     "details": {
         "type": "player left",
-        "user": {
+        "player": {
             "id": "",
         },
     }

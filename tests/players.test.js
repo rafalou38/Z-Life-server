@@ -38,7 +38,7 @@ const positions = [
     },
   },
   {
-    code: "A2",
+    code: "A3",
     position: {
       x: 2,
       y: 4,
@@ -46,7 +46,7 @@ const positions = [
   },
 ];
 
-jest.setTimeout(100);
+jest.setTimeout(1000);
 
 beforeAll(async () => {
   await Promise.all(
@@ -148,17 +148,113 @@ test("Move dispatch to chunk and only to chunk", async () => {
 
   // wss[2] not in the same chunk
   await new Promise((resolve, reject) => {
-    const interval = setInterval(() => {
+    const timeout = setTimeout(() => {
       resolve();
-    }, 50);
+    }, 500);
 
     wss[2].once("message", (raw) => {
       const data = JSON.parse(raw);
       expect(data.type !== "event" && data.details.type !== "move").toBe(true);
-      clearInterval(interval);
+      setTimeout(timeout);
       reject();
     });
   });
+});
+
+test("Change chunk dispatch to chunk, new chunk only", async () => {
+  wss[0].send(
+    JSON.stringify({
+      type: "event",
+      details: {
+        type: "chunk",
+        code: "A3",
+        position: { x: 0, y: 0 },
+      },
+    })
+  );
+
+  await Promise.all([
+    // wss[1] in the same old chunk
+    // wss[1] does not receive wss[0] moved
+    new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        resolve();
+      }, 50);
+
+      wss[1].on("message", (raw) => {
+        const data = JSON.parse(raw);
+        if (data.type !== "event" || data.details.type !== "move") return;
+
+        clearTimeout(timeout);
+        reject();
+      });
+    }),
+
+    // wss[1] in the same old
+    // wss[1] receive wss[0] left chunk
+    new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject("Did not receive wss[1] left chunk");
+      }, 1000);
+
+      wss[1].once("message", (raw) => {
+        const data = JSON.parse(raw);
+        if (data.type !== "event" && data.details.type !== "player left")
+          return console.log(data);
+        clearTimeout(timeout);
+        expect(data).toEqual({
+          type: "event",
+          details: {
+            type: "player left",
+            player: {
+              id: ids[0],
+            },
+          },
+        });
+        resolve();
+      });
+    }),
+
+    // wss[3] is in target chunk
+    // wss[3] receive wss[0] moved
+    new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject("wss[3] Did not receive wss[0] moved");
+      }, 50);
+      wss[3].once("message", (raw) => {
+        const data = JSON.parse(raw);
+        if (data.type !== "event" && data.details.type !== "move") return;
+        clearTimeout(timeout);
+        expect(data).toEqual({
+          type: "event",
+          details: {
+            type: "move",
+            player: {
+              id: ids[0],
+              position: { x: 0, y: 0 },
+            },
+          },
+        });
+        resolve();
+      });
+    }),
+    // wss[3] is in target chunk
+    // wss[3] does not receive wss[0] left chunk
+    new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        resolve();
+      }, 50);
+
+      wss[3].once("message", (raw) => {
+        const data = JSON.parse(raw);
+        if (data.type !== "event" || data.details.type !== "player left")
+          return;
+
+        clearTimeout(timeout);
+        reject();
+      });
+    }),
+  ]);
 });
 
 afterAll(() => {
