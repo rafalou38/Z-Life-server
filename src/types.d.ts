@@ -4,6 +4,9 @@ export type InData =
       userID: string;
     }
   | {
+      type: "fetch";
+    }
+  | {
       type: "event";
       details: {
         type: "chunk";
@@ -18,6 +21,7 @@ export type OutData =
     }
   | {
       type: "fail";
+      details: string;
     }
   | {
       type: "event";
@@ -27,6 +31,14 @@ export type OutData =
           id: string;
           position: Position;
         };
+      };
+    }
+  | {
+      type: "fetch";
+      chunk: "";
+      position: {
+        x: 0;
+        y: 0;
       };
     };
 

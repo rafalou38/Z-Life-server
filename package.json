@@ -2,7 +2,7 @@
   "name": "z-life-server",
   "version": "1.0.0",
   "description": "Web-sockets server for z-life",
-  "main": "index.js",
+  "main": "build/server.js",
   "author": "RafaelMC",
   "license": "MIT",
   "dependencies": {
@@ -12,12 +12,14 @@
   "scripts": {
     "watch": "tsc --watch",
     "start": "node ./build/server.js",
+    "dev": "nodemon -w build",
     "test": "jest"
   },
   "devDependencies": {
     "@types/jest": "^27.4.1",
     "@types/ws": "^8.5.3",
     "jest": "^27.5.1",
+    "nodemon": "^2.0.15",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.3"
   }

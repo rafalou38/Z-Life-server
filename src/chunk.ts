@@ -4,9 +4,11 @@ import { OutData } from "./types";
 
 export class Chunk {
   static chunks: Map<string, Chunk> = new Map();
+  code: string;
   players: Player[] = [];
   constructor(code: string) {
     Chunk.chunks.set(code, this);
+    this.code = code;
   }
   static get(code: string) {
     return Chunk.chunks.get(code) || new Chunk(code);
@@ -19,9 +21,9 @@ export class Chunk {
     this.players.push(player);
   }
 
-  dispatch(data: OutData) {
-    this.players.forEach((player) =>
-      player.connection.ws.send(JSON.stringify(data))
-    );
+  dispatch(data: OutData, exclude?: Player) {
+    this.players
+      .filter((p) => p != exclude)
+      .forEach((player) => player.connection.ws.send(JSON.stringify(data)));
   }
 }

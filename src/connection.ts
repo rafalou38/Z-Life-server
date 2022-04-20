@@ -1,12 +1,11 @@
 import { RawData, WebSocket } from "ws";
 import { Chunk } from "./chunk";
 import { Player } from "./player";
-import { InData, Position } from "./types";
+import { InData, OutData, Position } from "./types";
 import { log } from "./utils/log";
 
 export class Connection {
   initialized = false;
-  currentChunk: Chunk | null = null;
   ws: WebSocket;
   player: Player | null = null;
   static connections: Connection[] = [];
@@ -47,36 +46,51 @@ export class Connection {
         this.moveToChunk(data.details.code);
         this.move(data.details.position);
       }
+    } else if (data.type === "fetch") {
+      log("📬 ", "Fetch request received");
+      if (!this.player) return this.fail("not connected");
+      console.log({
+        type: "fetch",
+        chunk: this.player.chunk.code,
+        position: this.player.position,
+      });
+
+      this.ws.send(
+        JSON.stringify({
+          type: "fetch",
+          chunk: this.player.chunk.code,
+          position: this.player.position,
+        } as OutData)
+      );
     }
   }
 
   moveToChunk(chunk_code: string) {
-    if (!this.player || !this.initialized) return this.fail();
-
-    this.currentChunk?.removePlayer(this.player);
-
-    this.currentChunk = Chunk.get(chunk_code);
-    this.currentChunk.addPlayer(this.player);
+    if (!this.player || !this.initialized) return this.fail("not connected");
+    this.player.changeChunk(chunk_code);
   }
 
   move(new_pos: Position) {
-    if (!this.player || !this.initialized) return this.fail();
+    if (!this.player || !this.initialized) return this.fail("not connected");
 
     this.player.move(new_pos.x, new_pos.y);
 
-    this.currentChunk?.dispatch({
-      type: "event",
-      details: {
-        type: "move",
-        player: {
-          id: this.player.id,
-          position: new_pos,
+    this.player.chunk.dispatch(
+      {
+        type: "event",
+        details: {
+          type: "move",
+          player: {
+            id: this.player.id,
+            position: new_pos,
+          },
         },
       },
-    });
+      this.player
+    );
   }
 
-  fail() {
-    this.ws.send(JSON.stringify({ message: "fail" }));
+  fail(reason: string) {
+    this.ws.send(JSON.stringify({ message: "fail", details: reason }));
   }
 }

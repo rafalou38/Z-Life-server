@@ -14,7 +14,7 @@
 {
     "message":"connected"
 }
-// return -> 
+// return -> connection fermée automatiquement
 {
     "message": "error",
     "details": "already connected"
@@ -37,6 +37,23 @@
     }
 }
 
+```
+
+- [x] Fetch
+
+```json
+
+{
+    "type": "fetch",
+}
+// return ->
+{
+    "chunk": "",
+    "position": {
+        "x": 0,
+        "y": 0
+    }
+}
 ```
 
 ## Move
