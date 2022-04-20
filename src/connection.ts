@@ -45,6 +45,8 @@ export class Connection {
       if (data.details.type === "chunk") {
         this.moveToChunk(data.details.code);
         this.move(data.details.position);
+      } else if (data.details.type === "move") {
+        this.move(data.details.position);
       }
     } else if (data.type === "fetch") {
       log("📬 ", "Fetch request received");

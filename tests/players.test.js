@@ -10,10 +10,10 @@ const wss = [
 ];
 
 const ids = [
-  Math.random().toString(36).substring(7),
-  Math.random().toString(36).substring(7),
-  Math.random().toString(36).substring(7),
-  Math.random().toString(36).substring(7),
+  Math.random().toString(36).substring(5),
+  Math.random().toString(36).substring(5),
+  Math.random().toString(36).substring(5),
+  Math.random().toString(36).substring(5),
 ];
 const positions = [
   {
@@ -110,6 +110,55 @@ test("Change chunk & can fetch position + chunk", async () => {
       });
     });
   }
+});
+
+test("Move dispatch to chunk and only to chunk", async () => {
+  let newPos = {
+    x: 1,
+    y: 2,
+  };
+  wss[0].send(
+    JSON.stringify({
+      type: "event",
+      details: {
+        type: "move",
+        position: newPos,
+      },
+    })
+  );
+
+  // wss[1] in the same chunk
+  await new Promise((resolve, reject) => {
+    wss[1].once("message", (raw) => {
+      const data = JSON.parse(raw);
+      if (data.type !== "event" && data.details.type !== "move") return;
+      expect(data).toEqual({
+        type: "event",
+        details: {
+          type: "move",
+          player: {
+            id: ids[0],
+            position: newPos,
+          },
+        },
+      });
+      resolve();
+    });
+  });
+
+  // wss[2] not in the same chunk
+  await new Promise((resolve, reject) => {
+    const interval = setInterval(() => {
+      resolve();
+    }, 50);
+
+    wss[2].once("message", (raw) => {
+      const data = JSON.parse(raw);
+      expect(data.type !== "event" && data.details.type !== "move").toBe(true);
+      clearInterval(interval);
+      reject();
+    });
+  });
 });
 
 afterAll(() => {

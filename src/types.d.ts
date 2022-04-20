@@ -8,11 +8,16 @@ export type InData =
     }
   | {
       type: "event";
-      details: {
-        type: "chunk";
-        code: string;
-        position: Position;
-      };
+      details:
+        | {
+            type: "chunk";
+            code: string;
+            position: Position;
+          }
+        | {
+            type: "move";
+            position: Position;
+          };
     };
 
 export type OutData =

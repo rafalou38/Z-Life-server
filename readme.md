@@ -82,7 +82,7 @@
     "type": "event",
     "details": {
         "type": "move",
-        "user": {
+        "player": {
             "id": "",
             "position": {
                 "x": 0,
