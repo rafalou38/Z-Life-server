@@ -41,7 +41,7 @@ test("Connection Initialises", async () => {
     const connected = new Promise((resolve, reject) => {
       ws.once("message", (data) => {
         const message = JSON.parse(data);
-        expect(message.message).toBe("connected");
+        expect(message.type).toBe("login success");
         resolve(true);
       });
     });
@@ -56,7 +56,7 @@ test("Does not allow the same user to connect multiple times", async () => {
   const connected = new Promise((resolve, reject) => {
     ws.once("message", (data) => {
       const message = JSON.parse(data);
-      expect(message.message).toBe("error");
+      expect(message.type).toBe("login error");
       expect(message.details).toBe("already connected");
       resolve(true);
     });

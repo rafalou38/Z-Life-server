@@ -29,6 +29,13 @@ export type OutData =
       details: string;
     }
   | {
+      type: "login success";
+    }
+  | {
+      type: "login error";
+      details: string;
+    }
+  | {
       type: "event";
       details:
         | {
@@ -47,10 +54,12 @@ export type OutData =
     }
   | {
       type: "fetch";
-      chunk: "";
-      position: {
-        x: 0;
-        y: 0;
+      details: {
+        chunk: "";
+        position: {
+          x: 0;
+          y: 0;
+        };
       };
     };
 

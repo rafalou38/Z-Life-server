@@ -78,7 +78,7 @@ beforeEach(async () => {
       return new Promise((resolve, reject) => {
         ws.once("message", (data) => {
           const message = JSON.parse(data);
-          expect(message.message).toBe("connected");
+          expect(message.type).toBe("login success");
           resolve(true);
         });
       });
@@ -117,10 +117,12 @@ test("Change chunk & can fetch position + chunk", async () => {
 
         expect(data).toEqual({
           type: "fetch",
-          chunk: positions[i].code,
-          position: {
-            x: positions[i].position.x,
-            y: positions[i].position.y,
+          details: {
+            chunk: positions[i].code,
+            position: {
+              x: positions[i].position.x,
+              y: positions[i].position.y,
+            },
           },
         });
         resolve();

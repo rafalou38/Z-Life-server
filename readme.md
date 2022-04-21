@@ -12,11 +12,11 @@
 }
 // returns ->
 {
-    "message":"connected"
+    "type" : "login success",
 }
 // return -> connection fermée automatiquement
 {
-    "message": "error",
+    "type" : "login error",
     "details": "already connected"
 }
 ```
@@ -48,12 +48,16 @@
 }
 // return ->
 {
-    "chunk": "",
-    "position": {
-        "x": 0,
-        "y": 0
+    "type" : "fetch",
+    "details": {
+        "chunk": "",
+        "position": {
+            "x": 0,
+            "y": 0
+        }
     }
 }
+
 ```
 
 - [x] Move

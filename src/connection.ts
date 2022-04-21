@@ -37,13 +37,14 @@ export class Connection {
 
   handleMessage(message: string) {
     const data: InData = JSON.parse(message);
+    log(`Received:`, data);
     if (data.type === "init") {
       if (Player.isConnected(data.userID)) {
         log("😡", "Player already connected:", data.userID);
 
         this.ws.send(
           JSON.stringify({
-            message: "error",
+            type: "login error",
             details: "already connected",
           })
         );
@@ -57,7 +58,11 @@ export class Connection {
 
         log("🌍 ", "Client connected:", this.player.id);
 
-        this.ws.send(JSON.stringify({ message: "connected" }));
+        this.ws.send(
+          JSON.stringify({
+            type: "login success",
+          })
+        );
       }
     } else if (data.type === "event") {
       log("📬 ", "Event received", data.details.type);
@@ -76,9 +81,11 @@ export class Connection {
       this.ws.send(
         JSON.stringify({
           type: "fetch",
-          chunk: this.player.chunk?.code,
-          position: this.player.position,
-        } as OutData)
+          details: {
+            chunk: this.player.chunk?.code,
+            position: this.player.position,
+          },
+        })
       );
     }
   }
@@ -118,6 +125,6 @@ export class Connection {
   }
 
   fail(reason: string) {
-    this.ws.send(JSON.stringify({ message: "fail", details: reason }));
+    this.ws.send(JSON.stringify({ type: "fail", details: reason }));
   }
 }
