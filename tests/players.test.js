@@ -185,7 +185,7 @@ test("Move dispatch to chunk and only to chunk", async () => {
   // wss[1] in the same chunk
 });
 
-test("", async () => {
+test("Change chunk dispatch to chunk, new chunk only", async () => {
   wss[0].send(
     JSON.stringify({
       type: "event",
