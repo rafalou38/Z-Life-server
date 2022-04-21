@@ -12,7 +12,27 @@ export class Connection {
   constructor(ws: WebSocket) {
     this.ws = ws;
     this.ws.on("message", (data) => this.handleMessage(data.toString()));
+    this.ws.on("close", (code, reason) => {
+      this.handleClose();
+    });
     Connection.connections.push(this);
+  }
+
+  handleClose() {
+    if (!this.player) return;
+    this.player.chunk?.dispatch({
+      type: "event",
+      details: {
+        type: "player left",
+        player: {
+          id: this.player.id,
+        },
+      },
+    });
+    this.player.disconnect();
+
+    const index = Connection.connections.indexOf(this);
+    if (index > -1) Connection.connections.splice(index, 1);
   }
 
   handleMessage(message: string) {
@@ -46,6 +66,7 @@ export class Connection {
         this.moveToChunk(data.details.code);
         this.move(data.details.position);
       } else if (data.details.type === "move") {
+        log("📬 ", "Move received", this.player?.id);
         this.move(data.details.position);
       }
     } else if (data.type === "fetch") {

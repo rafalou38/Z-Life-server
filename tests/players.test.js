@@ -282,62 +282,51 @@ test("", async () => {
   ]);
 });
 
-// test("disconnect dispatch to chunk", async () => {
-//   wss[0].send(
-//     JSON.stringify({
-//       type: "event",
-//       details: {
-//         type: "chunk",
-//         code: "A3",
-//         position: { x: 0, y: 0 },
-//       },
-//     })
-//   );
-//   wss[1].send(
-//     JSON.stringify({
-//       type: "event",
-//       details: {
-//         type: "chunk",
-//         code: "A3",
-//         position: { x: 0, y: 0 },
-//       },
-//     })
-//   );
-//   wss[2].send(
-//     JSON.stringify({
-//       type: "event",
-//       details: {
-//         type: "chunk",
-//         code: "A4",
-//         position: { x: 0, y: 0 },
-//       },
-//     })
-//   );
+test("disconnect dispatch to chunk", async () => {
+  wss[0].close();
 
-//   await Promise.all([
-//     // wss[1] in the same chunk
-//     // wss[1] receive wss[0] left chunk
-//     new Promise((resolve, reject) => {
-//       const timeout = setTimeout(() => {
-//         reject("wss[1] Did not receive wss[0] left chunk");
-//       }, 1000);
+  await Promise.all([
+    // wss[1] in the same chunk
+    // wss[1] receive wss[0] left chunk
+    new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject("wss[1] Did not receive wss[0] left chunk");
+      }, 1000);
 
-//       wss[1].on("message", (raw) => {
-//         const data = JSON.parse(raw);
-//         if (
-//           (data.type !== "event" && data.details.type !== "player left") ||
-//           data.details.player.id !== ids[0]
-//         )
-//           return;
+      wss[1].on("message", (raw) => {
+        const data = JSON.parse(raw);
+        if (
+          (data.type !== "event" && data.details.type !== "player left") ||
+          data.details.player.id !== ids[0]
+        )
+          return;
 
-//         clearTimeout(timeout);
-//         resolve();
-//       });
-//     }),
-//   ]);
+        clearTimeout(timeout);
+        resolve();
+      });
+    }),
 
-//   // wss[0].close();
-// });
+    // wss[2] not in the same chunk
+    // wss[2] does not receive wss[0] left chunk
+    new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        resolve("wss[2] Did not receive wss[0] left chunk 👌");
+      }, 1000);
+
+      wss[2].on("message", (raw) => {
+        const data = JSON.parse(raw);
+        if (
+          (data.type !== "event" && data.details.type !== "player left") ||
+          data.details.player.id !== ids[0]
+        )
+          return;
+
+        clearTimeout(timeout);
+        reject();
+      });
+    }),
+  ]);
+});
 
 afterEach(() => {
   wss.forEach((ws) => (ws.readyState != ws.CLOSED ? ws.close() : null));

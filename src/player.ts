@@ -18,6 +18,11 @@ export class Player {
   static isConnected(id: string) {
     return Player.players.has(id);
   }
+  disconnect() {
+    log(this.id, "disconnected");
+    this.chunk?.removePlayer(this);
+    Player.players.delete(this.id);
+  }
   changeChunk(code: string) {
     log(this.id, "changed chunk", this.chunk?.code, "->", code);
     this.chunk?.removePlayer(this);
