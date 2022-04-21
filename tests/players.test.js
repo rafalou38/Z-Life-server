@@ -2,22 +2,22 @@ const WS = require("ws");
 
 const ws_url = "ws://localhost:8080";
 
-const wss = [
+let wss = [
   new WS.WebSocket(ws_url),
   new WS.WebSocket(ws_url),
   new WS.WebSocket(ws_url),
   new WS.WebSocket(ws_url),
 ];
 
-const ids = [
-  Math.random().toString(36).substring(5),
-  Math.random().toString(36).substring(5),
-  Math.random().toString(36).substring(5),
-  Math.random().toString(36).substring(5),
+let ids = [
+  Math.random().toString(36).substring(2),
+  Math.random().toString(36).substring(2),
+  Math.random().toString(36).substring(2),
+  Math.random().toString(36).substring(2),
 ];
 const positions = [
   {
-    code: "A1",
+    code: "A1", // A3
     position: {
       x: 2,
       y: 2,
@@ -46,9 +46,22 @@ const positions = [
   },
 ];
 
-jest.setTimeout(1000);
+// jest.setTimeout(1000);
 
-beforeAll(async () => {
+beforeEach(async () => {
+  wss = [
+    new WS.WebSocket(ws_url),
+    new WS.WebSocket(ws_url),
+    new WS.WebSocket(ws_url),
+    new WS.WebSocket(ws_url),
+  ];
+
+  ids = [
+    Math.random().toString(36).substring(2),
+    Math.random().toString(36).substring(2),
+    Math.random().toString(36).substring(2),
+    Math.random().toString(36).substring(2),
+  ];
   await Promise.all(
     wss.map((ws, i) => {
       return new Promise((resolve, reject) => {
@@ -71,9 +84,7 @@ beforeAll(async () => {
       });
     })
   );
-});
 
-test("Change chunk & can fetch position + chunk", async () => {
   for (let i = 0; i < wss.length; i++) {
     wss[i].send(
       JSON.stringify({
@@ -86,6 +97,12 @@ test("Change chunk & can fetch position + chunk", async () => {
     );
   }
 
+  await new Promise((resolve, reject) => {
+    setTimeout(resolve, 1000);
+  });
+});
+
+test("Change chunk & can fetch position + chunk", async () => {
   for (let i = 0; i < wss.length; i++) {
     wss[i].send(
       JSON.stringify({
@@ -127,136 +144,206 @@ test("Move dispatch to chunk and only to chunk", async () => {
     })
   );
 
-  // wss[1] in the same chunk
-  await new Promise((resolve, reject) => {
-    wss[1].once("message", (raw) => {
-      const data = JSON.parse(raw);
-      if (data.type !== "event" && data.details.type !== "move") return;
-      expect(data).toEqual({
-        type: "event",
-        details: {
-          type: "move",
-          player: {
-            id: ids[0],
-            position: newPos,
-          },
-        },
-      });
-      resolve();
-    });
-  });
-
-  // wss[2] not in the same chunk
-  await new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      resolve();
-    }, 500);
-
-    wss[2].once("message", (raw) => {
-      const data = JSON.parse(raw);
-      expect(data.type !== "event" && data.details.type !== "move").toBe(true);
-      setTimeout(timeout);
-      reject();
-    });
-  });
-});
-
-test("Change chunk dispatch to chunk, new chunk only", async () => {
-  wss[0].send(
-    JSON.stringify({
-      type: "event",
-      details: {
-        type: "chunk",
-        code: "A3",
-        position: { x: 0, y: 0 },
-      },
-    })
-  );
-
   await Promise.all([
-    // wss[1] in the same old chunk
-    // wss[1] does not receive wss[0] moved
+    // WS 1 should receive move event
     new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        resolve();
-      }, 50);
-
       wss[1].on("message", (raw) => {
         const data = JSON.parse(raw);
-        if (data.type !== "event" || data.details.type !== "move") return;
-
-        clearTimeout(timeout);
-        reject();
-      });
-    }),
-
-    // wss[1] in the same old
-    // wss[1] receive wss[0] left chunk
-    new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject("Did not receive wss[1] left chunk");
-      }, 1000);
-
-      wss[1].once("message", (raw) => {
-        const data = JSON.parse(raw);
-        if (data.type !== "event" && data.details.type !== "player left")
+        if (data.type !== "event" && data.details.type !== "move")
           return console.log(data);
-        clearTimeout(timeout);
-        expect(data).toEqual({
-          type: "event",
-          details: {
-            type: "player left",
-            player: {
-              id: ids[0],
-            },
-          },
-        });
-        resolve();
-      });
-    }),
 
-    // wss[3] is in target chunk
-    // wss[3] receive wss[0] moved
-    new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject("wss[3] Did not receive wss[0] moved");
-      }, 50);
-      wss[3].once("message", (raw) => {
-        const data = JSON.parse(raw);
-        if (data.type !== "event" && data.details.type !== "move") return;
-        clearTimeout(timeout);
         expect(data).toEqual({
           type: "event",
           details: {
             type: "move",
             player: {
               id: ids[0],
-              position: { x: 0, y: 0 },
+              position: newPos,
             },
           },
         });
         resolve();
       });
     }),
-    // wss[3] is in target chunk
-    // wss[3] does not receive wss[0] left chunk
+
+    // wss[2] not in the same chunk
     new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         resolve();
-      }, 50);
+      }, 500);
 
-      wss[3].once("message", (raw) => {
+      wss[2].on("message", (raw) => {
         const data = JSON.parse(raw);
-        if (data.type !== "event" || data.details.type !== "player left")
-          return;
+        if (data.type !== "event" && data.details.type !== "move") return;
 
-        clearTimeout(timeout);
+        setTimeout(timeout);
         reject();
       });
     }),
   ]);
+
+  // wss[1] in the same chunk
 });
 
-afterAll(() => {
-  wss.forEach((ws) => ws.close());
+// test("Change chunk dispatch to chunk, new chunk only", async () => {
+//   wss[0].send(
+//     JSON.stringify({
+//       type: "event",
+//       details: {
+//         type: "chunk",
+//         code: "A3",
+//         position: { x: 0, y: 0 },
+//       },
+//     })
+//   );
+
+//   await Promise.all([
+//     // wss[1] in the same old chunk
+//     // wss[1] does not receive wss[0] moved
+//     new Promise((resolve, reject) => {
+//       const timeout = setTimeout(() => {
+//         resolve();
+//         console.log("wss[1] did not receive wss[0] moved after 50ms");
+//       }, 50);
+
+//       wss[1].on("message", (raw) => {
+//         const data = JSON.parse(raw);
+//         if (data.type !== "event" || data.details.type !== "move") return;
+
+//         clearTimeout(timeout);
+//         reject();
+//       });
+//     }),
+
+//     // wss[1] in the same old
+//     // wss[1] receive wss[0] left chunk
+//     new Promise((resolve, reject) => {
+//       const timeout = setTimeout(() => {
+//         reject("Did not receive wss[1] left chunk");
+//       }, 1000);
+
+//       wss[1].once("message", (raw) => {
+//         const data = JSON.parse(raw);
+//         if (data.type !== "event" && data.details.type !== "player left")
+//           return console.log(data);
+//         clearTimeout(timeout);
+//         expect(data).toEqual({
+//           type: "event",
+//           details: {
+//             type: "player left",
+//             player: {
+//               id: ids[0],
+//             },
+//           },
+//         });
+//         console.log("wss[1] received wss[0] left chunk");
+//         resolve();
+//       });
+//     }),
+
+//     // wss[3] is in target chunk
+//     // wss[3] receive wss[0] moved
+//     new Promise((resolve, reject) => {
+//       const timeout = setTimeout(() => {
+//         reject("wss[3] Did not receive wss[0] moved");
+//       }, 50);
+
+//       wss[3].once("message", (raw) => {
+//         const data = JSON.parse(raw);
+//         if (data.type !== "event" && data.details.type !== "move") return;
+//         clearTimeout(timeout);
+//         expect(data).toEqual({
+//           type: "event",
+//           details: {
+//             type: "move",
+//             player: {
+//               id: ids[0],
+//               position: { x: 0, y: 0 },
+//             },
+//           },
+//         });
+//         console.log("wss[3] received wss[0] moved");
+//         resolve();
+//       });
+//     }),
+//     // wss[3] is in target chunk
+//     // wss[3] does not receive wss[0] left chunk
+//     new Promise((resolve, reject) => {
+//       const timeout = setTimeout(() => {
+//         resolve();
+//         console.log("wss[3] did not receive wss[0] left chunk after 50ms");
+//       }, 50);
+
+//       wss[3].once("message", (raw) => {
+//         const data = JSON.parse(sraw);
+//         if (data.type !== "event" || data.details.type !== "player left")
+//           return;
+
+//         clearTimeout(timeout);
+//         reject();
+//       });
+//     }),
+//   ]);
+// });
+if (1) {
+}
+// test("disconnect dispatch to chunk", async () => {
+//   wss[0].send(
+//     JSON.stringify({
+//       type: "event",
+//       details: {
+//         type: "chunk",
+//         code: "A3",
+//         position: { x: 0, y: 0 },
+//       },
+//     })
+//   );
+//   wss[1].send(
+//     JSON.stringify({
+//       type: "event",
+//       details: {
+//         type: "chunk",
+//         code: "A3",
+//         position: { x: 0, y: 0 },
+//       },
+//     })
+//   );
+//   wss[2].send(
+//     JSON.stringify({
+//       type: "event",
+//       details: {
+//         type: "chunk",
+//         code: "A4",
+//         position: { x: 0, y: 0 },
+//       },
+//     })
+//   );
+
+//   await Promise.all([
+//     // wss[1] in the same chunk
+//     // wss[1] receive wss[0] left chunk
+//     new Promise((resolve, reject) => {
+//       const timeout = setTimeout(() => {
+//         reject("wss[1] Did not receive wss[0] left chunk");
+//       }, 1000);
+
+//       wss[1].on("message", (raw) => {
+//         const data = JSON.parse(raw);
+//         if (
+//           (data.type !== "event" && data.details.type !== "player left") ||
+//           data.details.player.id !== ids[0]
+//         )
+//           return;
+
+//         clearTimeout(timeout);
+//         resolve();
+//       });
+//     }),
+//   ]);
+
+//   // wss[0].close();
+// });
+
+afterEach(() => {
+  wss.forEach((ws) => (ws.readyState != ws.CLOSED ? ws.close() : null));
 });
