@@ -23,7 +23,7 @@ export class Connection {
     this.player.chunk?.dispatch({
       type: "event",
       details: {
-        type: "player left",
+        type: "chunkLeft",
         player: {
           id: this.player.id,
         },
@@ -39,8 +39,8 @@ export class Connection {
     const data: InData = JSON.parse(message);
     log(`Received:`, data);
     if (data.type === "init") {
-      if (Player.isConnected(data.userID)) {
-        log("😡", "Player already connected:", data.userID);
+      if (Player.isConnected(data.credentials.username)) {
+        log("😡", "Player already connected:", data.credentials.username);
 
         this.ws.send(
           JSON.stringify({
@@ -54,7 +54,7 @@ export class Connection {
         return;
       } else {
         this.initialized = true;
-        this.player = new Player(this, data.userID);
+        this.player = new Player(this, data.credentials.username);
 
         log("🌍 ", "Client connected:", this.player.id);
 
@@ -95,7 +95,7 @@ export class Connection {
     this.player.chunk?.dispatch({
       type: "event",
       details: {
-        type: "player left",
+        type: "chunkLeft",
         player: {
           id: this.player.id,
         },

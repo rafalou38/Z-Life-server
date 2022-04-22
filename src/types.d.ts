@@ -1,7 +1,10 @@
 export type InData =
   | {
       type: "init";
-      userID: string;
+      credentials: {
+        username: string;
+        password: string;
+      };
     }
   | {
       type: "fetch";
@@ -46,7 +49,7 @@ export type OutData =
             };
           }
         | {
-            type: "player left";
+            type: "chunkLeft";
             player: {
               id: string;
             };

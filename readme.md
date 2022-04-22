@@ -8,7 +8,10 @@
 ```json
 {
     "type": "init",
-    "userID": "",
+    "credentials": {
+        "username": "",
+        "password": "",
+    }
 }
 // returns ->
 {
@@ -102,7 +105,7 @@
 {
     "type": "event",
     "details": {
-        "type": "player left",
+        "type": "chunkLeft",
         "player": {
             "id": "",
         },
