@@ -70,6 +70,19 @@ export class Connection {
       if (data.details.type === "chunk") {
         this.moveToChunk(data.details.code);
         this.move(data.details.position);
+
+        this.ws.send(
+          JSON.stringify({
+            type: "event",
+            details: {
+              type: "chunkFetch",
+              players: this.player?.chunk?.players.map((p) => ({
+                id: p.id,
+                position: p.position,
+              })),
+            },
+          })
+        );
       } else if (data.details.type === "move") {
         log("📬 ", "Move received", this.player?.id);
         this.move(data.details.position);

@@ -40,6 +40,23 @@
     }
 }
 
+// return -> liste des joueurs présents
+
+{
+    "type": "event",
+    "details": {
+        "type": "chunkFetch",
+        "players": [
+            {
+                "id": "",
+                "position": {
+                    "x": 0,
+                    "y": 0
+                }
+            }
+        ]
+    }
+}
 ```
 
 - [x] Fetch
