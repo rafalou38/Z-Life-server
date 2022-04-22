@@ -76,10 +76,12 @@ export class Connection {
             type: "event",
             details: {
               type: "chunkFetch",
-              players: this.player?.chunk?.players.map((p) => ({
-                id: p.id,
-                position: p.position,
-              })),
+              players: this.player?.chunk?.players
+                .filter((p) => p != this.player)
+                .map((p) => ({
+                  id: p.id,
+                  position: p.position,
+                })),
             },
           })
         );
