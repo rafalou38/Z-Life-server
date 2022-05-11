@@ -12,6 +12,7 @@
   "scripts": {
     "watch": "tsc --watch",
     "start": "node ./build/server.js",
+    "simul": "node ./build/scripts/simulate.js",
     "dev": "nodemon -w build",
     "test": "jest"
   },
