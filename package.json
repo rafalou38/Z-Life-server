@@ -10,6 +10,7 @@
     "ws": "^8.5.0"
   },
   "scripts": {
+    "build": "tsc",
     "watch": "tsc --watch",
     "start": "node ./build/server.js",
     "simul": "node ./build/scripts/simulate.js",
