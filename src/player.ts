@@ -33,4 +33,20 @@ export class Player {
     this.position.x = x;
     this.position.y = y;
   }
+  interact(itemID: string, target: Position) {
+    this.chunk?.dispatch(
+      {
+        type: "event",
+        details: {
+          type: "interact",
+          player: {
+            id: this.id,
+            currentItem: itemID,
+          },
+          target,
+        },
+      },
+      this
+    );
+  }
 }

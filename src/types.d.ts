@@ -18,6 +18,11 @@ export type InData =
             position: Position;
           }
         | {
+            type: "interact";
+            itemID: string;
+            targetPos: Position;
+          }
+        | {
             type: "move";
             position: Position;
           };
@@ -53,6 +58,14 @@ export type OutData =
             player: {
               id: string;
             };
+          }
+        | {
+            type: "interact";
+            player: {
+              id: string;
+              currentItem: string;
+            };
+            target: Position;
           };
     }
   | {

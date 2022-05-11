@@ -88,6 +88,9 @@ export class Connection {
       } else if (data.details.type === "move") {
         log("📬 ", "Move received", this.player?.id);
         this.move(data.details.position);
+      } else if (data.details.type === "interact") {
+        log("📬 ", "Interact received", this.player?.id);
+        this.player?.interact(data.details.itemID, data.details.targetPos);
       }
     } else if (data.type === "fetch") {
       log("📬 ", "Fetch request received");
