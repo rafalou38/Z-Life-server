@@ -10,6 +10,10 @@ export type InData =
       type: "fetch";
     }
   | {
+      type: "ping";
+      data: number;
+    }
+  | {
       type: "event";
       details:
         | {
@@ -35,6 +39,10 @@ export type OutData =
   | {
       type: "fail";
       details: string;
+    }
+  | {
+      type: "pong";
+      data: number;
     }
   | {
       type: "login success";

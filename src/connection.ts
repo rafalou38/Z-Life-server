@@ -38,7 +38,9 @@ export class Connection {
   handleMessage(message: string) {
     const data: InData = JSON.parse(message);
     log(`Received:`, data);
-    if (data.type === "init") {
+    if (data.type === "ping") {
+      this.ws.send(JSON.stringify({ type: "pong", data: data.data }));
+    } else if (data.type === "init") {
       if (Player.isConnected(data.credentials.username)) {
         log("😡", "Player already connected:", data.credentials.username);
 
