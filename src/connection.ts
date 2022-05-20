@@ -69,44 +69,18 @@ export class Connection {
     } else if (data.type === "event") {
       log("📬 ", "Event received", data.details.type);
 
-      if (data.details.type === "chunk") {
-        this.moveToChunk(data.details.code);
+      if (data.details.type === "chunkJoined") {
         this.move(data.details.position);
-
-        this.ws.send(
-          JSON.stringify({
-            type: "event",
-            details: {
-              type: "chunkFetch",
-              players: this.player?.chunk?.players
-                .filter((p) => p != this.player)
-                .map((p) => ({
-                  id: p.id,
-                  position: p.position,
-                })),
-            },
-          })
-        );
+        this.moveToChunk(data.details.code);
+        this.sendInfo();
       } else if (data.details.type === "move") {
-        log("📬 ", "Move received", this.player?.id);
         this.move(data.details.position);
       } else if (data.details.type === "interact") {
-        log("📬 ", "Interact received", this.player?.id);
         this.player?.interact(data.details.itemID, data.details.targetPos);
       }
     } else if (data.type === "fetch") {
-      log("📬 ", "Fetch request received");
       if (!this.player) return this.fail("not connected");
-
-      this.ws.send(
-        JSON.stringify({
-          type: "fetch",
-          details: {
-            chunk: this.player.chunk?.code,
-            position: this.player.position,
-          },
-        })
-      );
+      this.sendInfo();
     }
   }
 
@@ -122,6 +96,16 @@ export class Connection {
       },
     });
     this.player.changeChunk(chunk_code);
+    this.player.chunk?.dispatch({
+      type: "event",
+      details: {
+        type: "chunkJoined",
+        player: {
+          id: this.player.id,
+          position: this.player.position,
+        },
+      },
+    });
   }
 
   move(new_pos: Position) {
@@ -141,6 +125,22 @@ export class Connection {
         },
       },
       this.player
+    );
+  }
+
+  sendInfo() {
+    if (!this.player || !this.initialized) return this.fail("not connected");
+    this.ws.send(
+      JSON.stringify({
+        type: "event",
+        details: {
+          type: "chunkInfo",
+          players: this.player.chunk?.players
+            .filter((p) => p != this.player)
+            .map((p) => ({ id: p.id, position: p.position })),
+          weather: "Clear",
+        },
+      } as OutData)
     );
   }
 

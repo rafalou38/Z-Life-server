@@ -17,7 +17,7 @@ export type InData =
       type: "event";
       details:
         | {
-            type: "chunk";
+            type: "chunkJoined";
             code: string;
             position: Position;
           }
@@ -29,6 +29,10 @@ export type InData =
         | {
             type: "move";
             position: Position;
+          }
+        | {
+            type: "chat";
+            message: string;
           };
     };
 
@@ -68,6 +72,21 @@ export type OutData =
             };
           }
         | {
+            type: "chunkJoined";
+            player: {
+              id: string;
+              position: Position;
+            };
+          }
+        | {
+            type: "chunkInfo";
+            players: {
+              id: string;
+              position: Position;
+            }[];
+            weather: Weather;
+          }
+        | {
             type: "interact";
             player: {
               id: string;
@@ -75,19 +94,11 @@ export type OutData =
             };
             target: Position;
           };
-    }
-  | {
-      type: "fetch";
-      details: {
-        chunk: "";
-        position: {
-          x: 0;
-          y: 0;
-        };
-      };
     };
 
 export type Position = {
   x: number;
   y: number;
 };
+
+export type Weather = "Clear" | "Rain" | "Snow" | "Storm";
