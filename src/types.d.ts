@@ -22,6 +22,10 @@ export type InData =
             position: Position;
           }
         | {
+            type: "chunkLeft";
+            code: string;
+          }
+        | {
             type: "interact";
             itemID: string;
             targetPos: Position;
