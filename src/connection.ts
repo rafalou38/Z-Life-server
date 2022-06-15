@@ -20,15 +20,18 @@ export class Connection {
 
   handleClose() {
     if (!this.player) return;
-    this.player.chunk?.dispatch({
-      type: "event",
-      details: {
-        type: "chunkLeft",
-        player: {
-          id: this.player.id,
+    this.player.chunk?.dispatch(
+      {
+        type: "event",
+        details: {
+          type: "chunkLeft",
+          player: {
+            id: this.player.id,
+          },
         },
       },
-    });
+      this.player
+    );
     this.player.disconnect();
 
     const index = Connection.connections.indexOf(this);
@@ -77,6 +80,23 @@ export class Connection {
         this.move(data.details.position);
       } else if (data.details.type === "interact") {
         this.player?.interact(data.details.itemID, data.details.targetPos);
+      } else if (data.details.type === "chat") {
+        this.player?.chunk?.dispatch(
+          {
+            type: "event",
+            details: {
+              type: "chat",
+              player: {
+                id: this.player.id,
+              },
+              message: data.details.message,
+            },
+          },
+          this.player
+        );
+      } else if (data.details.type === "chunkLeft") {
+        this.moveToChunk(data.details.code);
+        this.sendInfo();
       }
     } else if (data.type === "fetch") {
       if (!this.player) return this.fail("not connected");
@@ -86,26 +106,32 @@ export class Connection {
 
   moveToChunk(chunk_code: string) {
     if (!this.player || !this.initialized) return this.fail("not connected");
-    this.player.chunk?.dispatch({
-      type: "event",
-      details: {
-        type: "chunkLeft",
-        player: {
-          id: this.player.id,
+    this.player.chunk?.dispatch(
+      {
+        type: "event",
+        details: {
+          type: "chunkLeft",
+          player: {
+            id: this.player.id,
+          },
         },
       },
-    });
+      this.player
+    );
     this.player.changeChunk(chunk_code);
-    this.player.chunk?.dispatch({
-      type: "event",
-      details: {
-        type: "chunkJoined",
-        player: {
-          id: this.player.id,
-          position: this.player.position,
+    this.player.chunk?.dispatch(
+      {
+        type: "event",
+        details: {
+          type: "chunkJoined",
+          player: {
+            id: this.player.id,
+            position: this.player.position,
+          },
         },
       },
-    });
+      this.player
+    );
   }
 
   move(new_pos: Position) {
@@ -136,7 +162,7 @@ export class Connection {
         details: {
           type: "chunkInfo",
           players: this.player.chunk?.players
-            .filter((p) => p != this.player)
+            .filter((p) => p.id != this.player?.id)
             .map((p) => ({ id: p.id, position: p.position })),
           weather: "Clear",
         },

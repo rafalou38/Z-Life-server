@@ -87,6 +87,13 @@ export type OutData =
             weather: Weather;
           }
         | {
+            type: "chat";
+            player: {
+              id: string;
+            };
+            message: string;
+          }
+        | {
             type: "interact";
             player: {
               id: string;
