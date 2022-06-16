@@ -1,5 +1,6 @@
 import { RawData, WebSocket } from "ws";
 import { Chunk } from "./chunk";
+import { Entity } from "./entity";
 import { Player } from "./player";
 import { InData, OutData, Position } from "./types";
 import { log } from "./utils/log";
@@ -9,12 +10,18 @@ export class Connection {
   ws: WebSocket;
   player: Player | null = null;
   static connections: Connection[] = [];
+
+  listeners = new Map<string, ((data: unknown, con: Connection) => void)[]>();
+
   constructor(ws: WebSocket) {
     this.ws = ws;
     this.ws.on("message", (data) => this.handleMessage(data.toString()));
     this.ws.on("close", (code, reason) => {
       this.handleClose();
     });
+
+    this.on("event.entitySpawned", Entity.onSpawned);
+
     Connection.connections.push(this);
   }
 
@@ -41,6 +48,18 @@ export class Connection {
   handleMessage(message: string) {
     const data: InData = JSON.parse(message);
     log(`Received:`, data);
+
+    // Dispatch message to listeners
+    let key: string = data.type;
+    if (data.type === "event") key = `${key}.${data.details.type}`;
+
+    const listeners = this.listeners.get(key);
+    if (listeners)
+      listeners.forEach((l) => {
+        if (data.type === "event") l(data.details, this);
+        else l(data, this);
+      });
+
     if (data.type === "ping") {
       this.ws.send(JSON.stringify({ type: "pong", data: data.data }));
     } else if (data.type === "init") {
@@ -172,5 +191,10 @@ export class Connection {
 
   fail(reason: string) {
     this.ws.send(JSON.stringify({ type: "fail", details: reason }));
+  }
+
+  on(type: string, callback: (data: any, con: Connection) => void) {
+    if (!this.listeners.has(type)) this.listeners.set(type, []);
+    this.listeners.get(type)!.push(callback);
   }
 }

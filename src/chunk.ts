@@ -1,4 +1,5 @@
 import { Connection } from "./connection";
+import { Entity } from "./entity";
 import { Player } from "./player";
 import { OutData } from "./types";
 
@@ -6,6 +7,7 @@ export class Chunk {
   static chunks: Map<string, Chunk> = new Map();
   code: string;
   players: Player[] = [];
+  entities: Entity[] = [];
   constructor(code: string) {
     Chunk.chunks.set(code, this);
     this.code = code;
@@ -19,6 +21,9 @@ export class Chunk {
   }
   addPlayer(player: Player) {
     this.players.push(player);
+  }
+  addEntity(entity: Entity) {
+    this.entities.push(entity);
   }
 
   dispatch(data: OutData, exclude?: Player) {

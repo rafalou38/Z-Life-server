@@ -104,6 +104,18 @@ export type OutData =
               currentItem: string;
             };
             target: Position;
+          }
+        | {
+            type: "entitySpawned";
+            entityType: number;
+            entityID: string;
+            position: Position;
+          }
+        | {
+            type: "entityMoved";
+            entityID: string;
+            position: Position;
+            entityType: number;
           };
     };
 
