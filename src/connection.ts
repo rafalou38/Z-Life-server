@@ -2,7 +2,7 @@ import { RawData, WebSocket } from "ws";
 import { Chunk } from "./chunk";
 import { Entity } from "./entity";
 import { Player } from "./player";
-import { InData, OutData, Position } from "./types";
+import { InData, OutData, Position } from "./types/types";
 import { log } from "./utils/log";
 
 export class Connection {
@@ -20,8 +20,7 @@ export class Connection {
       this.handleClose();
     });
 
-    this.on("event.entitySpawned", Entity.onSpawned);
-
+    Entity.initListeners(this);
     Connection.connections.push(this);
   }
 
@@ -196,5 +195,16 @@ export class Connection {
   on(type: string, callback: (data: any, con: Connection) => void) {
     if (!this.listeners.has(type)) this.listeners.set(type, []);
     this.listeners.get(type)!.push(callback);
+    return callback;
+  }
+  removeListener(type: string, callback: (data: any, con: Connection) => void) {
+    console.log("removing listeners", this.listeners);
+
+    this.listeners.set(
+      type,
+      this.listeners.get(type)?.filter((l) => l != callback) || []
+    );
+
+    console.log("result:", this.listeners);
   }
 }

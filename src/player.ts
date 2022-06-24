@@ -1,6 +1,6 @@
 import { Chunk } from "./chunk";
 import { Connection } from "./connection";
-import { Position } from "./types";
+import { Position } from "./types/types";
 import { log } from "./utils/log";
 
 export class Player {

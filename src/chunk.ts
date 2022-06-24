@@ -1,7 +1,7 @@
 import { Connection } from "./connection";
 import { Entity } from "./entity";
 import { Player } from "./player";
-import { OutData } from "./types";
+import { OutData } from "./types/types";
 
 export class Chunk {
   static chunks: Map<string, Chunk> = new Map();
@@ -24,6 +24,10 @@ export class Chunk {
   }
   addEntity(entity: Entity) {
     this.entities.push(entity);
+  }
+  removeEntity(entity: Entity) {
+    const index = this.entities.indexOf(entity);
+    if (index !== -1) this.entities.splice(index, 1);
   }
 
   dispatch(data: OutData, exclude?: Player) {

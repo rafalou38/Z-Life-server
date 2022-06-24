@@ -105,25 +105,10 @@ export type OutData =
             };
             target: Position;
           }
-        | {
-            type: "entitySpawned";
-            entityType: number;
-            entityID: string;
-            position: Position;
-          }
-        | {
-            type: "entityMoved";
-            entityID: string;
-            position: Position;
-            entityType: number;
-          }
-        | {
-            type: "entityInteracted";
-            entityID: string;
-            entityType: number;
-            itemID: string;
-            target: Position;
-          };
+        | entitySpawned
+        | entityMoved
+        | entityInteracted
+        | entityDied;
     };
 
 export type Position = {
