@@ -116,6 +116,13 @@ export type OutData =
             entityID: string;
             position: Position;
             entityType: number;
+          }
+        | {
+            type: "entityInteracted";
+            entityID: string;
+            entityType: number;
+            itemID: string;
+            target: Position;
           };
     };
 

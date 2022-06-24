@@ -18,6 +18,7 @@ export class Entity {
     this.chunk = chunk;
 
     con.on(`event.entityMoved`, this.onMove.bind(this));
+    con.on(`event.entityInteracted`, this.onInteract.bind(this));
   }
 
   static onSpawned(
@@ -55,7 +56,7 @@ export class Entity {
     entityType: number;
   }) {
     if (details.entityID !== this.id) return;
-    console.log("Entity moved", details.entityID);
+    // console.log("Entity moved", details.entityID);
 
     this.position = details.position;
     this.chunk.dispatch({
@@ -64,22 +65,18 @@ export class Entity {
     });
   }
 
-  //   interact(itemID: string, target: Position) {
-  //     if (!this.controller.player) return this.controller.fail("not connected");
-
-  //     this.chunk?.dispatch(
-  //       {
-  //         type: "event",
-  //         details: {
-  //           type: "interact",
-  //           player: {
-  //             id: this.id,
-  //             currentItem: itemID,
-  //           },
-  //           target,
-  //         },
-  //       },
-  //       this.controller.player
-  //     );
-  //   }
+  onInteract(details: {
+    type: "entityInteracted";
+    entityID: string;
+    entityType: number;
+    itemID: string;
+    target: Position;
+  }) {
+    if (!this.controller.player) return this.controller.fail("not connected");
+    console.log("Entity interacted", details.entityID);
+    this.chunk.dispatch({
+      type: "event",
+      details,
+    });
+  }
 }
